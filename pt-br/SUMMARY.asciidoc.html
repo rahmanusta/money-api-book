@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.3-dev">
+<meta name="author" content="Otávio Gonçalves de Santana">
+<title>JSR 354 Cookbook</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+<link rel="stylesheet" href="./asciidoctor.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>JSR 354 Cookbook</h1>
+<div class="details">
+<span id="author" class="author">Otávio Gonçalves de Santana</span><br>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#sum-rio">1. Sumário</a></li>
+<li><a href="#uma-especifica-o-de-dinheiro-ser-que-vale-mesmo-a-pena">2. Uma especificação de dinheiro, será que vale mesmo a pena?</a>
+<ul class="sectlevel2">
+<li><a href="#revisadores">2.1. Revisadores</a></li>
+</ul>
+</li>
+<li><a href="#autor">3. Autor</a>
+<ul class="sectlevel2">
+<li><a href="#otavio-santana">3.1. Otavio Santana</a></li>
+<li><a href="#a-motiva-o-do-tipo-dinheiro">3.2. A motivação do tipo dinheiro</a></li>
+<li><a href="#mas-ningu-m-passou-por-isso-antes-conhecimento-da-api">3.3. Mas ninguém passou por isso antes? Conhecimento da API</a></li>
+<li><a href="#manipulando-e-extraindo-informa-o-do-monetaryamount">3.4. Manipulando e extraindo informação do MonetaryAmount</a></li>
+<li><a href="#formatando-dinheiro">3.5. Formatando dinheiro</a></li>
+<li><a href="#cota-o">3.6. Cotação</a></li>
+<li><a href="#trabalhando-com-streams">3.7. Trabalhando com Streams</a></li>
+</ul>
+</li>
+<li><a href="#bibliografia">4. Bibliografia</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="sum-rio"><a class="anchor" href="#sum-rio"></a>1. Sumário</h2>
+<div class="sectionbody">
+
+</div>
+</div>
+<div class="sect1">
+<h2 id="uma-especifica-o-de-dinheiro-ser-que-vale-mesmo-a-pena"><a class="anchor" href="#uma-especifica-o-de-dinheiro-ser-que-vale-mesmo-a-pena"></a>2. Uma especificação de dinheiro, será que vale mesmo a pena?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Dinheiro é a forma mais comum de realizar trocas de bens, compra de materiais etc. Ele certamente foi, é e será representando em diversos programas que rodam Java. Mas afinal qual é a motivação por trás de se usar um tipo dinheiro? Não vale mais a pena utilizar um tipo primitivo do Java como o <code>Double</code>, <code>Float</code>, <code>String</code>, <code>BigDecimal</code>, etc.? Existem soluções melhores que essa? O que acontece com o meu encapsulamento quando se toma decisão de usar tipos primitivos? Usar classes utilitárias para tratar a mesma moeda pode ser muito interessante, mas caso a desenvolvedor esqueça de utilizar tal classe o resultado poderá ser desastroso. Uma vez que seja necessário criar um tipo dinheiro, surge a primeira dúvida: Será que ninguém nunca passou por esse problema antes? Vale lembrar que o fator de ficar “reinventando a roda” não é uma boa estratégia sem falar, que o desenvolvedor passará pelos mesmos problemas já resolvidos por outros mais experientes. Com esse intuito nasceu a especificação de moeda.</p>
+</div>
+<div class="paragraph">
+<p>A <strong>JSR 354</strong>, é uma especificação Java cujo o objetivo é tomar conta do dinheiro e resolvendo alguns problemas triviais que os desenvolvedores Java vem enfrentado em seu dia a dia. A partir dessa especificação será mais fácil trabalhar com dinheiro de forma padronizada. Para entender melhor o funcionamento da API esse material foi dividido em algumas partes:</p>
+</div>
+<div class="paragraph">
+<p>No primeiro capítulo será discutido a motivação por trás de utilizar um tipo dinheiro em seu sistema, os benefícios tanto no design, centralização de código, manutenção e orientação a objetos.</p>
+</div>
+<div class="paragraph">
+<p>Criação de um tipo dinheiro, mas será que ninguém nunca teve esse problema? Essa pergunta será respondida nesse segundo capítulo, falando da motivação da especificação além do uso básico da API.</p>
+</div>
+<div class="paragraph">
+<p>Extrair valores e realizar pequenas operações a partir de um valor monetário, esse é o principal objetivo das operações com query e operador: Será demonstrado o funcionamento das classes <code>MonetaryOperator</code> e <code>MonetaryQuery</code>, diferenças entre elas, as classes utilitárias <code>MonetaryOperators</code> e <code>MonetaryQueries</code> e como criar uma query ou operação no dinheiro.</p>
+</div>
+<div class="paragraph">
+<p>Formatando um montante monetário: Será demonstrado aqui a forma de exibir formatar o dinheiro com classes já suportadas pela API, além de como criar um formatador do zero.</p>
+</div>
+<div class="paragraph">
+<p>Sim, estamos preparados para o Java 8!: Conheça as funções embutidas dentro da RI feita para trabalhar com <strong>Streams</strong> de montante monetário.
+Convertendo valores: O que acontece quando tentamos realizar somatórios de dinheiros com moedas diferentes? Certamente lançará uma exceção certo? Nesse ponto será demonstrado como realizar conversão com cotações de valores, além de realizar a busca de cotação a partir de uma data específica.
+ Trabalhando com o Java EE: Conversores de JSF, CDI e Spring, nesse capítulo mostraremos classes utilitárias para trabalhar com essas tecnologias.</p>
+</div>
+<div class="paragraph">
+<p>Espero que os leitores curtam bastante o projeto realizado em conjunto com toda a comunidade Java.</p>
+</div>
+<div class="sect2">
+<h3 id="revisadores"><a class="anchor" href="#revisadores"></a>2.1. Revisadores</h3>
+<div class="paragraph">
+<p><strong>Daniel Dias</strong></p>
+</div>
+<div class="paragraph">
+<p>Tecnólogo em Analise e Desenvolvimento de Sistema e Pós-Graduando em Desenvolvimento Java pela Universidade Estácio de Sá.
+Um Carioca apaixonado por tecnologia,games, animes e mangas.Interessado e se aperfeiçoando cada vez mais na Tecnologia Java, atualmente sou Administrador do Grupo de Java da minha Pós-Graduação, colunista no PTI(Profissionais de TI) e participante do GUJ respondendo sobre java e divulgando a Revista programar.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="autor"><a class="anchor" href="#autor"></a>3. Autor</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="otavio-santana"><a class="anchor" href="#otavio-santana"></a>3.1. Otavio Santana</h3>
+<div class="paragraph">
+<p>Um Desenvolvedor apaixonado pelo que faz. Praticante da filosofia ágil e do desenvolvimento poliglota na Bahia, JUG Leader do JavaBahia, coordenador do SouJava além de auxiliar em diversos JUGs ao redor do mundo, um dos fomentadores do grupo LinguÁgil. Leva a sério o termo “Make the future Java” presente como membro do Java Expert Group em diversas especificações Java nas plataformas SE, ME e EE, principalmente na SE em que contribui diretamente para o projeto OpenJDK, além de ser membro atuante do JCP, inclusive ganhando um outstanding member award e Java Champion pelos seus feitos. Presente nos maiores eventos Java e desenvolvimento de software do mundo. Contribuiu para diversos projetos Open Source também é membro da OSI, Open Source Instituite, desenvolve e realiza manutenções nos principais projetos Java da Apache Foundation na qual atualmente é commiter. Quando sobra tempo, escreve artigos, livros e ajudar revisão técnica de diversos materiais no mundo Java.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="a-motiva-o-do-tipo-dinheiro"><a class="anchor" href="#a-motiva-o-do-tipo-dinheiro"></a>3.2. A motivação do tipo dinheiro</h3>
+<div class="paragraph">
+<p>Segundo o Wikipédia, o dinheiro é o meio usado na troca de bens, usado na compra de bens, serviços, força de trabalho, divisas estrangeiras ou nas demais transações financeiras, emitido e controlado pelo governo de cada país, que é o único que tem essa atribuição. Considerando isso, muitos sistemas em Java acabam utilizando ou representando esse o valor monetário, mas como representar o dinheiro em seu sistema?</p>
+</div>
+<div class="paragraph">
+<p>Para representar o dinheiro a primeira estratégia é utilizar os tipos já oriundos do Java, o livro Java Efetivo não recomenda a utilização do uso do <code>double</code> e <code>float</code> quando respostas precisas são necessárias.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">double val = 1.03 - .42;
+System.out.println(val); //0.6100000000000001</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Esse mesmo livro recomenda duas estratégias, a primeira delas é utilizando o long e o <code>int</code>, para isso, é necessário realizar a conversão do valor para centavos, essa solução é muito recomendada quando a velocidade e a ocupação de memória são pontos importantes, no entanto, é importante se preocupar com o número de casas decimais, o livro não recomenda representação maior que nove casas decimais.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public static void main(String[] args) {
+int itemsBought = 0;
+int funds = 100;
+for (int price = 10; funds &gt;= price; price += 10) {
+itemsBought++;
+funds -= price;
+}
+System.out.println(itemsBought + " items bought.");
+System.out.println("Money left over: "+ funds + " cents");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Um problema de utilizar a representação do dinheiro com <code>int</code> e <code>long</code> é a dificuldade e a não legibilidade de representar valores monetários dessa forma. Para exemplificar, um produto tem um preço no valor de doze dólares, como representamos em centavos, colocaremos o valor de mil e duzentos centavos.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class Product {
+     private String name;
+     private int money;
+     //getter and setter
+}
+Produto banana = new Produto("banana", 12_00);
+Produto pasta = new Produto("pasta", 4_00);
+int sum = banana.getMoney() + macarrao.getMoney();</code></pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>Mas o que aconteceria se esquecermos de converter esse valor de dólares para centavos (no caso colocar apenas doze em vez de mil e duzentos)? Certamente o resultado seria desastroso, outro problema estaria no controle de arredondamentos.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Além do uso de <code>int</code> e <code>long</code> o Java efetivo recomenda o uso do <code>BigDecimal</code>, com isso, nosso produto terá uma chamada bem mais intuitiva e mais comum, afinal, é mais natural falar que um produto custa doze dólares e não mil e duzentos centavos.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class Product {
+     private String name;
+     private BigDecimal money;
+     //getter and setter
+}
+Produto banana = new Produto("banana", BigDecimal.valueOf(12D));
+Produto pasta = new Produto("pasta", BigDecimal.valueOf(4D));
+BigDecimal sum = banana.getMoney().add(macarrao.getMoney());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Outro ponto importante que o <code>BigDecimal</code> já trata é o controle de arredondamentos de maneira tranquila.</p>
+</div>
+<div class="paragraph">
+<p>Indo além com a nossa classe produto, temos um pequeno problema com ela, não representamos a moeda! Ou seja, ela ficou subentendida em todos os casos, caso o meu sistema lide apenas com uma moeda isto não é um problema, mas imagine que o meu produto seja vendido em diversos pontos do mundo. Apenas o doze não significa nada, doze pode ser qualquer coisa (reais, pesos, dólares, etc.).</p>
+</div>
+<div class="paragraph">
+<p>Para representar o dinheiro é importante entendê-lo. De forma resumida, o dinheiro é composto por duas partes, a parte do valor que é a quantidade numérica, mas apenas com esse valor não conseguimos fazer muita coisa, precisamos da moeda. A moeda representa o “sistema do dinheiro” em comum uso, especialmente dentro de uma nação, seguindo essa definição o real, peso, dólar e euros são tipos de moedas. Portanto, teremos que adicionar a moeda dentro do produto. Podemos representar moeda de algumas formas:</p>
+</div>
+<div class="paragraph">
+<p>A primeira delas é utilizando o tipo <code>String</code>, mas o que acontece se em vez de escrever dólar escrever “dolra” com um pequeno problema de escrita? Não temos nenhum controle com o tipo String, assim ele pode receber desde um pequeno erro de escrita até valores ilógicos como banana, macarrão, etc. Apesar destes últimos não serem moedas serão normalmente aceitos se forem passados como <code>String</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class Product {
+     private String name;
+     private String currency;
+     private BigDecimal money;
+     //getter and setter
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A segunda estratégia seria utilizar um <code>enum</code> para representar as moedas, dessa forma, as opções serão restritas. Com essa estratégia resolvemos o problema da <del>`String`,</del> apenas serão possíveis os valores que definiremos a partir do <code>enum</code>, porém nosso <code>enum</code> precisará ficar mais rico uma vez que temos de lidar com diversos aspectos de internacionalização dentre eles a ISO <em>4217</em>, padrão para moeda.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class Product {
+     private String name;
+     private Currency currency;
+     private BigDecimal value;
+     //getter and setter
+}
+enum Currency {
+        REAL, DOLLAR, EURO;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Para resolver isso, é possível utilizar uma classe já existente dentro do JDK a classe <em>java.util.Currency</em>, com ela conseguimos resolver os dois problemas:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Apenas entrarão valores do tipo <strong>Currency</strong> no setter.</p>
+</li>
+<li>
+<p>Essa classe já trabalha com a ISO 4217.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class Product {
+     private String name;
+     private Currency currency;
+     private BigDecimal value;
+     //getter and setter
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Com o nosso dinheiro composto precismos validar que as moedas são as mesmas na hora de realizar a compra ou realizar o somatório, afinal, a cotação de um produto em real deve ser diferente de um em dólar.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">Product banana = //instance;
+Product pasta = //instance;
+if(banana.getCurrency().equals(pasta.getCurrency())) {
+  BigDecimal value = celular.getValue().add(notebook.getValue());
+ }//exception</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Possivelmente teremos que realizar essa validação em diversos pontos do nosso código, dessa forma criaremos uma classe utilitária.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ProductUtils {
+public static BigDecimal sum(Product pA, Product pB) {
+            if(pA.getCurrency().equals(pB.getCurrency())) {
+return pA.getValue().add(pB.getValue());
+      }
+return null;
+        }
+}
+BigDecimal sum = ProdutoUtils.sum(pasta, banana);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pronto, Com isso resolvemos todos os nossos problemas, certo? Errado! Vamos listar alguns possíveis problemas:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Para realizar o somatório de produtos é necessário que a pessoa lembre de realizar a chamada da classe utilitária, mas o que acontece com aquilo que você tem de lembrar? Exato, fatalmente se esquece.</p>
+</li>
+<li>
+<p>Como falamos acima, o dinheiro pode ser usado não apenas com produto, mas com diversas coisas, serviços, força de trabalho, etc., assim será necessário duplicar os dois campos, moeda e valor monetário, para diversos pontos.</p>
+</li>
+<li>
+<p>Uma vez com diversas classes utilizando o dinheiro teremos duas estratégias para realizar a validação, uma seria criar classes utilitárias para todo modelo que use dinheiro, ServiceUtils, GoodsUtils, etc., ou uma classe utilitária que recebe quatro parâmetros (o valor e a moeda dos dois para ser comparado e então somado).</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MoneyUtils {
+public static BigDecimal sum(Currency currencyA, BigDecimal valueA, Currency currencyB, BigDecimal valueB) {
+   //...
+}
+public class ServiceUtils {}
+public class WorkerUtils {}</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>O que acontece se eu apenas definir apenas um único item do dinheiro, o valor ou a moeda? Faz sentido dizer que o produto vale doze? Ou que ele vale dólar? Absolutamente não, ele vale doze dólares e isso precisa ser validado.</p>
+</li>
+<li>
+<p>É de responsabilidade da classe produto, ou qualquer outra que precise trabalhar com o dinheiro, cuidar da criação e do estado do dinheiro?</p>
+</li>
+<li>
+<p>Uma vez utilizando classes utilitárias para realizar essa validação não estamos vazando encapsulamento? Afinal é possível realizar o somatório de dois valores ignorando a validação da moeda gerando erro. Olhando a definição do Wikipédia sobre o encapsulamento: Permite esconder propriedades e métodos de um objeto para proteger o código de corrupções acidentais.
+Além desses problemas, usando como referência o Clean Code, temos uma ótima definição entre estrutura de dados e um objeto, basicamente o objeto esconde os dados para expor um comportamento, ou seja, não estamos programando orientado a objetos dessa forma.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A solução para resolver esse problema virá de um artigo do Martin Fowler, na qual ele cita o exemplo do dinheiro como o seu favorito, assim será criado o tipo dinheiro. Com isso resolveremos:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Centralização do código, todo o comportamento do dinheiro estará na classe dinheiro.</p>
+</li>
+<li>
+<p>Removeremos a responsabilidade das outras classes, não será necessário, por exemplo, ter o controle na hora de criar valores dentro da classe produto citada anteriormente.</p>
+</li>
+<li>
+<p>Adeus as classes utilitárias, uma vez a validação dentro da classe dinheiro, as classes utilitárias não serão mais necessárias, sem falar no clássico problema de esquecer de usá-las.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class Money {
+   private  Currency currency;
+   private  BigDecimal value;
+   //behavior here
+}
+Product banana = new Product("banana", new Money(12, dollar));
+Product pasta = new Product("pasta", new Money(4, dollar))
+Money money = banana.getMoney().add(abacaxi.getMoney());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Com isso se trouxe a motivação por trás da criação do tipo dinheiro. Além de evitar problemas, por exemplo, o esquecimento da validação do dinheiro, código espelhado e desencapsulado garantimos também maior qualidade de código como responsabilidade única, dinheiro como objeto e não apenas como estrutura de dados e trazemos o dinheiro para o domínio da nossa aplicação.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="mas-ningu-m-passou-por-isso-antes-conhecimento-da-api"><a class="anchor" href="#mas-ningu-m-passou-por-isso-antes-conhecimento-da-api"></a>3.3. Mas ninguém passou por isso antes? Conhecimento da API</h3>
+<div class="paragraph">
+<p>No capítulo anterior foi discutido as vantagens de se trazer o dinheiro como um tipo em vez de tratá-lo como apenas como tipo primitivo. Mas será que ninguém nunca passou por esse problema antes? A arte de “reinventar a roda” além de ser muito custosa, já que demanda muito tempo, passa a ser muito perigosa já que se tende a passar pelos mesmos problemas que um programador mais experiente já enfrentou. Uma famosa frase de <em>Clarice Lispecto</em>r diz: <em>"Quem caminha sozinho pode até chegar mais rápido, mas aquele que vai acompanhado, com certeza vai mais longe."</em>, ou seja, a melhor estratégia é se unir à um framework que já faz isso, assim é possível trocar experiências com programadores que já passaram por isso, não repetir os mesmos erros, contribuir com essa ferramenta, dessa forma, ela ficará cada mais e mais robusta e com menos erros.</p>
+</div>
+<div class="paragraph">
+<p>Assim se pode unir a uma solução favorita para desenvolver o seu tipo dinheiro. Como lidar com esse tipo de problema é cada vez mais comum no mundo do desenvolvimento de software, o que acontece se cada um utilizar a sua solução específica? Por muitas razões se pode optar por uma solução, por exemplo, uma boa documentação, licença, razões comerciais, etc. Assim como integrar com cada uma delas? Caso se escolha uma é possível trocar para uma outra? Sabemos que ficar preso em um vendor não é algo bons para os negócios. Com esse objetivo nasce uma especificação Java para lidar com o tipo dinheiro a JSR 354. Ela tem como principal objetivo tratar dinheiro.</p>
+</div>
+<div class="paragraph">
+<p>Uma vez definindo a interface comum, cada empresa ou desenvolvedor poderá optar pela sua solução favorita ou trocá-la de forma transparente, para isso, basta que essa API implemente essa especificação. Esse comportamento é bem semelhante numa troca de banco de dados relacional no mundo Java, caso a aplicação siga a especificação e use as interfaces do JDBC, se pode trocar de banco tranquilamente, para isso, é necessário apenas trocar o driver, implementação, e tudo continuará funcionando desde que sua aplicação use apenas as interfaces.</p>
+</div>
+<div class="paragraph">
+<p>Relembrando o conceito de dinheiro, de forma resumida, o dinheiro é composto por duas partes, a parte do valor que é a quantidade, assim representada de forma numérica, mas apenas com esse valor não conseguimos fazer muita coisa, precisamos da moeda. A moeda representa o “sistema do dinheiro” em comum uso, especialmente dentro de uma nação, seguindo essa definição o real, peso, dólar e euros são tipos de moedas.</p>
+</div>
+<div class="sect3">
+<h4 id="acesso-ao-c-digo-fonte-e-instala-o"><a class="anchor" href="#acesso-ao-c-digo-fonte-e-instala-o"></a>3.3.1. Acesso ao código fonte e instalação</h4>
+<div class="paragraph">
+<p>Como toda especificação no Java, JSR, além da API ela possui uma implementação de referência, como o próprio nome diz, essa implementação servirá de base para as próximas implementações. No caso da JSR 354, money-api, a implementação de referência é o Moneta (Para mais informações em relação ao código-fonte do projeto acesse
+<a href="https://github.com/JavaMoney/jsr354-ri">https://github.com/JavaMoney/jsr354-ri</a>
+). Basicamente, é possível utilizar o moneta de duas formas:</p>
+</div>
+<div class="paragraph">
+<p>A primeira delas é acessando o seu repositório de dependência do maven  (
+<a href="http://mvnrepository.com/artifact/org.javamoney/moneta">http://mvnrepository.com/artifact/org.javamoney/moneta</a>
+), assim caso o seu projeto use o maven, por exemplo, basta adicionar a dependência do moneta em seu projeto da seguinte forma:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>        &lt;dependency&gt;
+            &lt;groupId&gt;org.javamoney&lt;/groupId&gt;
+            &lt;artifactId&gt;moneta&lt;/artifactId&gt;
+            &lt;version&gt;moneta_version&lt;/version&gt;
+        &lt;/dependency&gt;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Caso seja Gradle:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>'org.javamoney:moneta:moneta_version'</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Caso seja Yvi:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;dependency org="org.javamoney" name="moneta" rev="moneta_version"/&gt;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A outra forma é baixando o código-fonte e o compilando, para isso será necessário seguir alguns passos, mas basicamente é baixar o parent o instalá-lo e em seguida instalar o Moneta. Vale lembrar que para realizar esse procedimento é necessário ter o git, Java 8 e o maven instalado e configurado em sua máquina.</p>
+</div>
+<div class="paragraph">
+<p>Baixar o código do javamoney-parent, para isso basta executar o seguinte comando:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>git clone https://github.com/JavaMoney/javamoney-parent.git</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Em seguida acesse a pasta:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>cd javamoney-parent</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Compile e código-fonte e o instale em seu repositório local, no nosso caso também pularemos os testes apenas para que seja mais rápido:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>mvn clean install -Dmaven.test.skip</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pronto, uma vez feito isso o próximo passo será realizar a instalação do Moneta.</p>
+</div>
+<div class="paragraph">
+<p>Baixar o código do Moneta, para isso basta executar o seguinte comando:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>git clone git@github.com:JavaMoney/jsr354-ri.git</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Em seguida acesse a pasta:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>cd jsr354-ri</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Compile e código-fonte e o instale em seu repositório local, no nosso caso também pularemos os testes apenas para que seja mais rápido:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>mvn clean install -Dmaven.test.skip</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pronto, código-fonte instalado e poderá ser utilizado tranquilamente. No caso do livro estamos usando como base a master do repositório, ou seja, é recomendável que baixe o código-fonte e o instale localmente. Para ter acesso ao código-fonte de exemplo basta acessar:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/otaviojava/money-api-book-samples">https://github.com/otaviojava/money-api-book-samples</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="representando-dinheiro-e-moeda-com-o-money-api"><a class="anchor" href="#representando-dinheiro-e-moeda-com-o-money-api"></a>3.3.2. Representando dinheiro e moeda com o money-api</h4>
+<div class="paragraph">
+<p>Na money-api, será usado esse nome em vez de JSR 354, também será necessário representar tanto o valor numérico quanto a moeda. Para representar a moeda existe a interface <code>CurrencyUnit</code> ela precisa ser imutável e thread-safe.</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33%;">
+<col style="width: 33%;">
+<col style="width: 33%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Nome do método</th>
+<th class="tableblock halign-left valign-top">Descrição</th>
+<th class="tableblock halign-left valign-top">Exemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String getCurrencyCode()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna o código da moeda, para as moedas que seguem o ISO isso serão retornados três letras.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BRL para o real brasileiro, USD para dólares americanos.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>int getNumericCode()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna o código numérico da moeda, assim como o código ele possui três dígitos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">986 para a moeda brasileira, 840 para dólares americanos.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>int getDefaultFractionDigits()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna o número de dígitos normalmente utilizado pela moeda.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BRL tem dois e JPY não tem.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Nesse material a implementação utilizada será o <strong>Moneta</strong>, a implementação de referência para essa especificação. Com ele é possível criar uma instância de moedas de duas formas. A primeira delas é utilizando o código da moeda, caso seja uma moeda que siga o padrão de moeda será uma <code>String</code> com três letras.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class CurrencyExample1 {
+
+    public static void main(String[] args) {
+
+        CurrencyUnit currencyUnit = Monetary.getCurrency("BRL");
+        String currencyCode = currencyUnit.getCurrencyCode();//BRL
+        int numericCurrencyCode = currencyUnit.getNumericCode();//986
+        int fractionDigits = currencyUnit.getDefaultFractionDigits();//2
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A outra forma simples é utilizando a classe <code>Locale</code>, essa criação é muito interessante, por exemplo, em uma aplicação web de compras em que a partir do <code>Locale</code> do request será possível saber qual é a moeda do usuário que está acessando a aplicação.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class CurrencyExample2 {
+
+    public static void main(String[] args) {
+        CurrencyUnit currencyUnit = Monetary.getCurrency(Locale.US);
+        String currencyCode = currencyUnit.getCurrencyCode();//USD
+        int numericCurrencyCode = currencyUnit.getNumericCode();//840
+        int fractionDigits = currencyUnit.getDefaultFractionDigits();//2
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Definido a representação da moeda o próximo passo será a representação do valor monetário, para isso, existe a interface <code>MonetaryAmount</code>, uma característica importante é que todas as implementações precisam ser imutável e thread-safe.</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Método</th>
+<th class="tableblock halign-left valign-top">Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;R&gt; R query(MonetaryQuery&lt;R&gt; query)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Realiza query com o valor monetário.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MonetaryAmount with(MonetaryOperator operator)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Realiza operações com o montante monetário.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean isGreaterThan(MonetaryAmount amount)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro se a instância é maior que o valor passado no parâmetro, caso sejam iguais ele retornará falso.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean   isGreaterThanOrEqualTo(MonetaryAmount amount)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro se a instância é maior ou igual que o valor passado no parâmetro, caso sejam iguais ele retornará verdadeiro.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean isLessThan(MonetaryAmount amount)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro se a instância é menor que o valor passado no parâmetro, caso sejam iguais ele retornará falso.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isLessThanOrEqualTo(MonetaryAmount amt)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro se a instância é menor ou igual que o valor passado no parâmetro, caso sejam iguais ele retornará verdadeiro.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean isEqualTo(MonetaryAmount amount)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro caso a instância é igual ao valor monetário passado no parâmetro.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean isNegative()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro se negativo</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean isNegativeOrZero()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro se é negativo ou zero</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isPositive()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro se é positivo</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean isPositiveOrZero()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna verdadeiro se positivo ou igual a zero</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isZero()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Verifica se o valor do dinheiro é zero.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MonetaryAmount add(MonetaryAmount amount)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Realiza a soma e retorna o resultado</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MonetaryAmount subtract(MonetaryAmount amount)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Realiza a subtração e retorna o reusltado</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MonetaryAmount multiply(Number multiplicand)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Realiza a multiplicação e retorna o resultado</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MonetaryAmount divide(Number divisor)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Realiza a divisão</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MonetaryAmount remainder(Number divisor)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Realiza a divisão e retorna o resto</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MonetaryAmount negate()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Realiza a negação do montante monetário, ou seja, -this.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>getCurrency()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retorna o dinheiro da moeda.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Dentro do <strong>Moneta</strong> existem três implementações para a interface <code>MonetaryAmount</code>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Money: a implementação padrão, ela representa o valor numérico com o BigDecimal.</p>
+</li>
+<li>
+<p>RoundedMoney: assim como a implementação Money, representa o valor numérico com o BigDecimal, a diferença entre eles é que com o RoundedMoney é possível receber um MonetaryOperator para ser chamada a cada operação, por exemplo, a cada operação aritmética realizar uma operação de arredondamento.</p>
+</li>
+<li>
+<p>FastMoney: a implementação que representa o valor número com o primitivo long, das implementações apresentadas ela é a mais rápida, cerca de quinze vezes mais rápidas que as outras duas, além de ser mais leve na criação. Porém ela possui uma maior limitação em relação a precisão, caso seja necessário trabalhar com essa precisão, as operações não podem ultrapassar de cinco casas decimais.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="m-todos-de-cria-o"><a class="anchor" href="#m-todos-de-cria-o"></a>3.3.3. Métodos de criação</h4>
+<div class="paragraph">
+<p>Para criar uma instância de <code>MonetaryAmount</code>, todas as implementações seguem o mesmo padrão de nomenclatura utilizando, com uma pequena exceção no <code>RoundedMoney</code> uma vez que ele pode receber um <code>MonetaryOperator</code> para trabalhar como “arredondador” em cada operação. Listando os mais importantes temos o total de três métodos, que são:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>O método <strong>of</strong> passando um number e um código de moeda.</p>
+</li>
+<li>
+<p>O método <strong>zero</strong> passando um CurrencyUnit.</p>
+</li>
+<li>
+<p>O método <strong>ofMinor</strong> passando um long e uma moeda, esse long será tratado como centavos e será convertido levando em consideração a moeda, por exemplo, 200 cents equivalem a dois dólares.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MethodsCreationMoney {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = Money.of(BigDecimal.TEN, currency); //BRL 10
+        MonetaryAmount zero = Money.zero(currency);//BRL 0
+        MonetaryAmount moneyFromCurrencyCode = Money.of(10, "USD");//USD 10
+        MonetaryAmount moneyFromCents = Money.ofMinor(currency, 100_00);//BRL 10
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MethodsCreationsFastMoney {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = FastMoney.of(BigDecimal.TEN, currency); //BRL 10
+        MonetaryAmount zero = FastMoney.zero(currency);//BRL 0
+        MonetaryAmount moneyFromCurrencyCode = FastMoney.of(10, "USD");//USD 10
+        MonetaryAmount moneyFromCents = FastMoney.ofMinor(currency, 100_00);//BRL 10
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MethodsCreationRoundedMoney {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = RoundedMoney.of(BigDecimal.TEN, currency); //BRL 10
+        MonetaryAmount zero = RoundedMoney.zero(currency);//BRL 0
+        MonetaryAmount moneyFromCurrencyCode = RoundedMoney.of(10, "USD");//USD 10
+        MonetaryAmount moneyFromCents = RoundedMoney.ofMinor(currency, 100_00);//BRL 10
+    }
+}</code></pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="m-todos-de-cria-o-para-o-roundedmoney"><a class="anchor" href="#m-todos-de-cria-o-para-o-roundedmoney"></a>Métodos de Criação para o RoundedMoney</h5>
+<div class="paragraph">
+<p>Além dos métodos comuns de construção a classe <code>RoundedMoney</code>, possui outras formas de parâmetros para que seja possível informar o <code>MonetaryOperator</code> para ser executado após cada operação do <code>MonetaryAmount</code>, vale lembrar, a principal característica dessa classe é realizar esse tipo de operação, caso não seja necessário, outra implementação é recomendada.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class RoundedMoneyCreation2 {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = RoundedMoney.of(BigDecimal.TEN, currency, MonetaryOperators.rounding()); //BRL 10
+        MonetaryAmount zero = RoundedMoney.zero(currency);//BRL 0
+        MonetaryAmount moneyFromCurrencyCode = RoundedMoney.of(10, "USD");//USD 10
+        MonetaryAmount moneyFromCents = RoundedMoney.ofMinor(currency, 100_00);//BRL 10
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="opera-es-aritm-ticas"><a class="anchor" href="#opera-es-aritm-ticas"></a>3.3.4. Operações Aritméticas</h4>
+<div class="paragraph">
+<p>Com o <code>MonetaryAmount</code> é possível realizar operações como subtração e soma, salientando que as implementações são imutáveis, ou seja, o resultado resultará em uma nova instância. Ao realizar operações que recebem um <code>MonetaryAmount</code> o resultado será também um <code>MonetaryAmount</code>, mas da implementação da instância que chamou o método.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ArithmeticOperations {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = Money.of(BigDecimal.TEN, currency);
+        MonetaryAmount money2 = FastMoney.of(BigDecimal.TEN, currency);
+        MonetaryAmount addResult = money.add(money2);//BRL 20 Money implementation
+        MonetaryAmount subtractResult = money2.subtract(addResult);//BRL -10 FastMoney implementation
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Para as operações que de multiplicação, divisão e resto é necessário passar um parâmetro do tipo <code>Number</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ArithmeticOperations2 {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = Money.of(100, currency);
+        Number number = 20;
+        MonetaryAmount divideResult = money.divide(number);//BRL 5
+        MonetaryAmount remainderResult = money.remainder(30);//BRL 10
+        MonetaryAmount resultMultiply = money.multiply(5);//BRL 500
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Também é possível realizar operações de sinais com o <code>MonetaryAmount</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ArithmeticOperations3 {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = Money.of(100, currency);
+        MonetaryAmount negateResult = money.negate();//BRL -100
+        MonetaryAmount plusResult = money.plus();//BRL 100
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="opera-es-boolianas"><a class="anchor" href="#opera-es-boolianas"></a>3.3.5. Operações boolianas</h4>
+<div class="paragraph">
+<p>Com o MonetaryAmount é possível realizar comparações em relações a outros <code>MonetaryAmount</code>, com ele é possível, por exemplo, verificar se um dinheiro é maior, menor ou igual ao outro.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = Money.of(10, currency);
+        MonetaryAmount money2 = Money.of(20, currency);
+        boolean equalsToResult = money.isEqualTo(money2);//false
+        boolean greaterThan = money.isGreaterThan(money2);//false
+        boolean greaterThanOrEqualTo = money.isGreaterThanOrEqualTo(money2);//false
+        boolean lessThan = money.isLessThan(money2);//true
+        boolean lessThanOrEqualTo = money.isLessThanOrEqualTo(money2);//true
+        boolean negative = money.isNegative();//false
+        boolean negativeOrZero = money.isNegativeOrZero();//false
+        boolean positive = money.isPositive();//true
+        boolean positiveOrZero = money.isPositiveOrZero();//true
+        boolean zero = money.isZero();//false
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="numbervalue-a-representa-o-da-parte-num-rica-do-money"><a class="anchor" href="#numbervalue-a-representa-o-da-parte-num-rica-do-money"></a>3.3.6. NumberValue: A representação da parte numérica do money</h4>
+<div class="paragraph">
+<p>Em alguns momentos é importante recuperar e tratar as informações do dinheiro de forma separada, para isso, a interface dispõe de método para recuperar tanto a moeda quanto o valor monetário. Para a moeda ele obviamente retorna a interface <code>CurrencyUnit</code> e para representar o valor numérico é retornado a classe <code>NumberValue</code>. Essa classe é filha da <code>Number</code> do Java, assim é possível recuperar para os tipos primitivos básicos do Java (<code>int</code>, <code>long</code>, <code>float</code>, <code>double</code>, etc.).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class RetrieveInformationMethods {
+
+    public  static  void main(String[] args) {
+
+        MonetaryAmount money = Money.of(10, Monetary.getCurrency("BRL"));
+        CurrencyUnit currency = money.getCurrency();
+        Number number = money.getNumber();
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Além disso, com o <code>NumberValue</code> é possível realizar mais algumas operações, por exemplo, é possível definir qual classe será recuperada a partir do <code>NumberValue</code>, desde que essa classe seja filha da classe <code>Number</code>. No caso da implementação de referência serão todas as classes que são <code>Number</code> e estão dentro do JDK.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class RetrieveInformationMethods2 {
+
+    public  static  void main(String[] args) {
+
+
+        MonetaryAmount money = Money.of(BigDecimal.valueOf(10.21), Monetary.getCurrency("BRL"));
+        NumberValue number = money.getNumber();
+        int precision = number.getPrecision();//4
+        int scale = number.getScale();//2
+        long amountFractionDenominator = number.getAmountFractionDenominator();//21
+        long amountFractionNumerator = number.getAmountFractionNumerator();//10
+        Class&lt;?&gt; numberType = number.getNumberType();//java.math.BigDecimal
+        BigDecimal value = number.numberValue(BigDecimal.class);
+        Integer integerValue = number.numberValue(Integer.class);
+
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="manipulando-e-extraindo-informa-o-do-monetaryamount"><a class="anchor" href="#manipulando-e-extraindo-informa-o-do-monetaryamount"></a>3.4. Manipulando e extraindo informação do MonetaryAmount</h3>
+<div class="paragraph">
+<p>Além de realizar operações básicas como as operações aritméticas, algumas vezes é necessário extrair ou converter informações do dinheiro, por exemplo, extrair a menor parte do dinheiro, obter apenas os centavos, ou a maior parte do dinheiro. Com esse intuito existe as interfaces <code>MonetaryOperator</code> e <code>MonetaryQuery</code>. Ambas as interfaces possuem apenas um método para ser implementados, ou seja, são interfaces funcionais.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">@FunctionalInterface
+public interface MonetaryOperator{
+
+    MonetaryAmount apply(MonetaryAmount amount);
+}
+
+
+@FunctionalInterface
+public interface MonetaryQuery&lt;R&gt;{
+
+    R queryFrom(MonetaryAmount amount);
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="monetaryoperator"><a class="anchor" href="#monetaryoperator"></a>3.4.1. MonetaryOperator</h4>
+<div class="paragraph">
+<p>O <code>MonetaryOperator</code> é uma interface funcional que recebe um <code>MonetaryAmount</code> e retorna um <code>MonetaryAmount</code>. Essa interface é muito discutida ao se falar sobre a implementação do <code>RoundedMoney</code> que a utiliza como agente arredondador. Com essa interface é possível realizar operações de arredondamento, retornar parte do dinheiro, o dobro do valor etc.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryOperatorExamples {
+
+    public  static void main(String[] args) {
+        MonetaryOperator doubleOperator = m -&gt; m.multiply(2);
+        MonetaryOperator halfOperator = m -&gt; m.divide(2);
+        MonetaryOperator operator = m -&gt; {
+            if(m.isPositive()){
+                return m.multiply(2);
+            }
+            return m.divide(2);
+        };
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Para o executá-lo basta chamar o método apply da interface ou chamar o método <strong>with</strong> dentro do <code>MonetaryAmount</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class HelloMonetaryOperator {
+
+    public  static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = FastMoney.of(10, currency);
+        MonetaryOperator doubleOperator = m -&gt; m.multiply(2);
+        MonetaryAmount result = doubleOperator.apply(money);//BRL 20.00000
+        MonetaryAmount result2 = result.with(doubleOperator);//BRL 40.00000
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>O moneta traz por padrão algumas implementações de <code>MonetaryOperator</code>, a classe <code>MonetaryOperators</code>. Ela é uma classe utilitária que traz algumas funcionalidades importantes e algumas vezes muito corriqueira dentro da vida de um desenvolvedor Java, como:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>reciprocal()</strong> Retorna o dinheiro como reciprocal, multiplicando pelo valor inverso (1/n).</p>
+</li>
+<li>
+<p><strong>permil(Number number)</strong> retorna o valor permil do dinheiro, por exemplo, <strong>permil(10)</strong> de <code>EUR 2.35</code> retornará EUR <code>0.0235</code>.</p>
+</li>
+<li>
+<p><strong>percent(Number number)</strong> retorna o percentual de um dinheiro, por exemplo, <strong>percent(10)</strong> de <code>EUR 200.00</code> retornará <code>EUR 20.00</code>.</p>
+</li>
+<li>
+<p><strong>minorPart()</strong> retorna o valor que se encontra na direita da vírgula, por exemplo, a menor parte de <code>EUR 2.35</code> é <code>EUR 0.35</code>.</p>
+</li>
+<li>
+<p><strong>majorPart()</strong> retorna o valor inteiro do dinheiro, por exemplo, a maior parte de <code>EUR 2.35</code> é <code>EUR 2</code>.</p>
+</li>
+<li>
+<p><strong>rounding()</strong> realiza o processo de arredondamento do dinheiro, para saber o número de casas após a vírgula é recuperado a informação do método getDefaultFractionDigits() da interface CurrencyUnit.</p>
+</li>
+<li>
+<p><strong>exchange(CurrencyUnit currency)</strong> dado um dinheiro esse operador realizará a troca da moeda, ou seja, ele apenas vai trocar mudar a moeda não levando em consideração a sua cotação, por exemplo, <code>EUR 2.35</code> <strong>exchange('BRL')</strong> retornará <code>BRL 2.35</code>.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryOperatorsExample {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        CurrencyUnit dollar = Monetary.getCurrency(Locale.US);
+
+        MonetaryAmount money = Money.of(120.231, currency);
+
+        MonetaryAmount majorParteResult = money.with(MonetaryOperators.majorPart());//BRL 120
+        MonetaryAmount minorPartResult = money.with(MonetaryOperators.minorPart());//BRL 0.231
+        MonetaryAmount percentResult = money.with(MonetaryOperators.percent(20));//BRL 24.0462
+        MonetaryAmount permilResult = money.with(MonetaryOperators.permil(100));//BRL 12.0231
+        MonetaryAmount roundingResult = money.with(MonetaryOperators.rounding());//BRL 120.23
+        MonetaryAmount resultExchange = money.with(MonetaryOperators.exchange(dollar));//USD 120.231
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="monetaryquery"><a class="anchor" href="#monetaryquery"></a>3.4.2. MonetaryQuery</h4>
+<div class="paragraph">
+<p>O <code>MonetaryQuery</code> semelhante ao <code>MonetaryOperator</code> é uma interface funcional que recebe um <code>MonetaryOperator</code>, a sua diferença está no retorno, ele pode retornar qualquer tipo de objeto a partir do <em>generics</em>. Com o <code>MonateryQuery</code> é possível recuperar algumas informações no <code>MonetaryAmount</code>, por exemplo, o código da moeda, apenas o número no formato long ou em BigDecimal.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryQueryExamples {
+
+    public static void main(String[] args) {
+        MonetaryQuery&lt;Long&gt; longQuery = m -&gt; m.getNumber().longValue();
+        MonetaryQuery&lt;String&gt; currencyCodeQuery = m -&gt; m.getCurrency().getCurrencyCode();
+        MonetaryQuery&lt;Integer&gt; fractionDigits = m -&gt; m.getCurrency().getDefaultFractionDigits();
+
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Para o executá-lo basta chamar o método apply da interface ou chamar o método “with” dentro do MonetaryAmount.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class HelloMonetaryQuery {
+
+    public  static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = FastMoney.of(10, currency);
+        MonetaryQuery&lt;String&gt; currencyCodeQuery = m -&gt; m.getCurrency().getCurrencyCode();
+        String result = currencyCodeQuery.queryFrom(money);//BRL
+        String result2 = money.query(currencyCodeQuery);//BRL
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>O moneta traz por padrão algumas implementações de <code>MonetaryQuery</code>, a classe <code>MonetaryQueries</code>. Ela é uma classe utilitária que traz algumas funcionalidades importantes e algumas vezes muito corriqueira dentro da vida de um desenvolvedor Java, como:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>MonetaryQuery&lt;Long&gt; extractMajorPart()</strong> recupera a maior parte de um dinheiro, por exemplo, <code>EUR 2.35</code> retornará <code>2</code>.</p>
+</li>
+<li>
+<p><strong>MonetaryQuery&lt;Long&gt; convertMinorPart()</strong> recupera o valor monetário, o convertendo para a menor parte, centavos de um dinheiro, por exemplo, <code>USD 2.35</code> será retornado o <code>235</code>.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryQueriesExample {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency(Locale.US);
+
+        MonetaryAmount money = Money.of(120.23, currency);
+        Long moneyInCents = money.query(MonetaryQueries.convertMinorPart());//12023
+        Long majorPart = money.query(MonetaryQueries.extractMajorPart());//120
+        Long minorPart = money.query(MonetaryQueries.extractMinorPart());//23
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="monetaryquery-vs-monetaryoperator"><a class="anchor" href="#monetaryquery-vs-monetaryoperator"></a>3.4.3. MonetaryQuery vs MonetaryOperator</h4>
+<div class="paragraph">
+<p>Mas com o <code>MonetaryQuery</code> é possível também retornar <code>MonetaryAmount</code> e assim temos o mesmo resultado que um <code>MonetaryOperator</code>, assim qual é o objetivo de ter duas interfaces? O Objetivo de terem as duas interfaces é por questão de nomenclatura e padronização. <code>MonetaryQuery</code> tem o objetivo extrair e buscar informações dentro do <code>MonetaryAmount</code>, já o <code>MonetaryOperator</code> tem o objetivo de realizar operações com o dinheiro.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class DifferenceMonetaryQueryMonetaryOperator {
+
+    public  static void main(String[] args) {
+
+        MonetaryQuery&lt;MonetaryAmount&gt; doubleQuery = m -&gt; m.multiply(2);
+        MonetaryOperator doubleOperator = m -&gt; m.multiply(2);
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="formatando-dinheiro"><a class="anchor" href="#formatando-dinheiro"></a>3.5. Formatando dinheiro</h3>
+<div class="paragraph">
+<p>A interação com o usuário na maioria dos software é uma parte fundamental, assim é necessário pensar na forma de apresentar a informação para o usuário além da interação com o software. O dinheiro é uma parte importante desses softwares, assim é importante exibir o total gasto por um serviço ou o somatório de produtos que o usuário deseja comprar. Sem falar na forma de interação, por exemplo, informar o dinheiro que será transferido por uma outra conta via internet banking. Para trabalhar com a formatação de um <code>MonetaryAmount</code> existe a interface <code>MonetaryAmountFormat</code> que basicamente expõe o <code>MonetaryAmount</code> como <code>String</code> e recupera um <code>MonetaryAmount</code> a partir de uma <code>String</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public interface MonetaryAmountFormat extends MonetaryQuery&lt;String&gt;{
+
+   AmountFormatContext getContext();
+
+   default String format(MonetaryAmount amount){...}
+
+   void print(Appendable appendable, MonetaryAmount amount) throws IOException;
+
+   MonetaryAmount parse(CharSequence text) throws MonetaryParseException;
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Um exemplo simples é o <strong>toString</strong> e o parse dentro das implementações do <code>MonetaryAmount</code> dentro do moneta.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ToStrimgExample {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency(Locale.US);
+        MonetaryAmount money = Money.of(10, currency);
+        MonetaryAmount money2 = FastMoney.of(20, currency);
+        MonetaryAmount money3 = RoundedMoney.of(30, currency, MonetaryOperators.rounding());
+        String text = money.toString();//USD 10
+        String text2 = money2.toString();//USD 20
+        String text3 = money3.toString();//USD 30
+        MonetaryAmount result = Money.parse(text);
+        MonetaryAmount result2 = FastMoney.parse(text2);
+        MonetaryAmount result3 = RoundedMoney.parse(text3);
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="a-classe-monetaryamountformat"><a class="anchor" href="#a-classe-monetaryamountformat"></a>3.5.1. A classe MonetaryAmountFormat</h4>
+<div class="paragraph">
+<p>Com o <code>MonetaryFormats</code> é possível criar formatador a partir de uma query builder ou utilizando apenas pelo <code>Locale</code>. Com o <code>enum CurrencyStyle</code> é possível informar quais informações entrarão no formatador.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryFormatsExampleQuery {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("USD");
+        MonetaryAmount money = Money.of(12, currency);
+
+        MonetaryAmountFormat format = MonetaryFormats
+                        .getAmountFormat(AmountFormatQueryBuilder.of(Locale.US).set(CurrencyStyle.SYMBOL).build());
+
+
+        String resultText = format.format(money);//$12.00
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Com o <code>AmountFormatQueryBuilder</code> é possível também, criar formatos customizados.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryFormatsExampleQueryCustom {
+
+    public static void main(String[] args) {
+        MonetaryAmount amount = Money.of(12345.67, "USD");
+        MonetaryAmountFormat customFormat = MonetaryFormats.getAmountFormat(
+                AmountFormatQueryBuilder.of(Locale.US)
+                .set(CurrencyStyle.NAME)
+                .set("pattern", "00,00,00,00.00 ¤")
+                .build());
+
+                String formatted = customFormat.format(amount); //00,01,23,45.67 US Dollar
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="a-classe-monetaryamountformatsymbols"><a class="anchor" href="#a-classe-monetaryamountformatsymbols"></a>3.5.2. A classe MonetaryAmountFormatSymbols</h4>
+<div class="paragraph">
+<p>Existe também a interface <code>MonetaryAmountFormatSymbols</code>, que de forma semelhante a classe <code>DecimalFormat</code> com a classe <code>Number</code>, tem o objetivo de realizar formatações do dinheiro a partir de configurações de símbolos, moedas, quantidade mínima e máxima de dígitos antes e depois da vírgula, etc.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryAmountFormatSymbolsExample {
+
+    public static void main(String[] args) {
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        MonetaryAmount money = Money.of(12, currency);
+        MonetaryAmountFormat defafult = MonetaryAmountFormatSymbols.getDefafult();
+        String format = defafult.format(money);//R$ 12,00
+        MonetaryAmount moneyParsed = Money.parse(format, defafult);//or using defafult.parse(format);
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Caso seja necessário configurar as informações como quantidade mínima, moeda, etc. Existem duas classes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A primeira é a <code>MonetaryAmountSymbols</code> com ela é possível definir os símbolos que serão utilizados, por exemplo, símbolo da moeda, separador, etc.</p>
+</li>
+<li>
+<p>A classe <code>MonetaryAmountNumericInformation</code> cuidará das informações com relação a formatação do valor numérico, por exemplo, o número mínimo e máximo de dígitos antes e depois da vírgula.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryAmountFormatSymbolsExample2 {
+
+    public static void main(String[] args) {
+        MonetaryAmountFormatSymbols defafult = MonetaryAmountFormatSymbols.getDefafult();
+        MonetaryAmountSymbols amountSymbols = defafult.getAmountSymbols();
+        MonetaryAmountNumericInformation numericInformation = defafult.getNumericInformation();
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Também é possível definir qual implementação que será utilizada na serialização do objeto. Para isso existe a classe funcional <code>MonetaryAmountProducer</code>, com ela é possível definir sua própria implementação a partir do number e da moeda. O <strong>Moneta</strong> por padrão já vem com três implementações:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>FastMoneyProducer</code> produtor de <code>MonetaryAmount</code> com a implementação <code>FastMoney</code>.</p>
+</li>
+<li>
+<p><code>MoneyProducer</code> produtor de <code>MonetaryAmount</code> com a implementação <code>Money</code>.</p>
+</li>
+<li>
+<p><code>RoundedMoneyProducer</code> produtor de <code>MonetaryAmount</code> com a implementação <code>RoundedMoney</code>, nela é possível passar um <code>MonetaryOperator</code> que será utilizado na construção dessa implementação caso não seja informado um operador de arredondamento será utilizado o <code>MonetaryOperators.rounding()</code>. Lembrando que <code>MonetaryOperator</code> dentro da implementação <code>RoundedMoney</code> será utilizado como agente arredondador, ou seja, para cada operação esse operador será chamado.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryAmountFormatSymbolsExample3 {
+
+    public static void main(String[] args) {
+        MonetaryAmountSymbols symbols = new MonetaryAmountSymbols(Locale.US);// new MonetaryAmountSymbols();
+        symbols.setCurrencySymbol("Mon");
+        MonetaryAmountFormat formater = MonetaryAmountFormatSymbols.of(symbols, new MoneyProducer());
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        String text = formater.format(Money.of(10, currency));//Mon 10.00
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Também é possível passar uma <code>String</code> como pattern para a formatação, essa <code>String</code> segue o mesmo padrão da classe
+<a href="http://docs.oracle.com/javase/7/docs/api/java/text/DecimalFormat.html">DecimalFormat</a>
+.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MonetaryAmountFormatSymbolsExample3 {
+
+    public static void main(String[] args) {
+        MonetaryAmountSymbols symbols = new MonetaryAmountSymbols(Locale.US);// new MonetaryAmountSymbols();
+        symbols.setCurrencySymbol("Mon");
+        MonetaryAmountFormat formater = MonetaryAmountFormatSymbols.of("¤ ###,###.00", symbols, new MoneyProducer());
+        CurrencyUnit currency = Monetary.getCurrency("BRL");
+        String text = formater.format(Money.of(10_000_00, currency));//Mon 1,000,000.00
+        System.out.println(text);
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="cota-o"><a class="anchor" href="#cota-o"></a>3.6. Cotação</h3>
+<div class="paragraph">
+<p>A internacionalização é um conceito aplicado em diversas áreas, basicamente, é uma troca de cultura, economia e política em diversos lugares do mundo. Com a internacionalização é possível, por exemplo, saber o que acontece do outro lado mundo de maneira instantânea, conhecer lugares e culturas sem sair de casa além de adquirir produtos. É muito comum exportar e importar diversas coisas, produtos, serviços, assinaturas, etc. Seguindo a tendência mundial os softwares também precisam estar preparados para uma arquitetura internacionalizada, ou seja, permitir a interação de usuário em diversos pontos do mundo. Com o dinheiro não é diferente, é necessário estar pronto para isso.</p>
+</div>
+<div class="paragraph">
+<p>Falando de internacionalização e dinheiro é natural que precise interagir com diversas moedas, mas o que acontece ao realizar operações com moedas diferentes?</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class MistakeExample {
+
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+        MonetaryAmount money = FastMoney.of(10, dollar);
+        MonetaryAmount money2 = FastMoney.of(10, real);
+        MonetaryAmount result = money.add(money2);//javax.money.MonetaryException: Currency mismatch: USD/BRL
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Utilizando o money-api, ele gerará uma exceção afirmando que existe um erro ao tentar somar dinheiro com moedas diferentes, nesse caso real com dólar. Essa exceção foi lançada de forma correta uma vez que não necessariamente um dólar equivale a um real. Para realiza tal operação de somatório entre moedas diferentes é necessário primeiro realizar a cotação da moeda. A taxa de câmbio é a relação das moedas entre dois países que resulta no preço de uma delas com relação a outra.</p>
+</div>
+<div class="sect3">
+<h4 id="realizando-cota-o-com-exchangerateprovider"><a class="anchor" href="#realizando-cota-o-com-exchangerateprovider"></a>3.6.1. Realizando cotação com ExchangeRateProvider</h4>
+<div class="paragraph">
+<p>Com o money-api é possível realizar a cotação da moeda, o responsável por essa ação é a interface <code>ExchangeRateProvider</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ExchangeRateProviderExample {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+        MonetaryAmount money = FastMoney.of(10, dollar);
+        MonetaryAmount money2 = FastMoney.of(10, real);
+        ExchangeRateProvider provider = MonetaryConversions.getExchangeRateProvider(ExchangeRateType.ECB);
+        CurrencyConversion currencyConversion = provider.getCurrencyConversion(dollar);
+        MonetaryAmount result = currencyConversion.apply(money2);//value on dollar
+        MonetaryAmount monetaryAmount = money.add(result);//result on dollar
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Dentro do moneta existem quatro implementações de <code>ExchangeRateProvider</code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>ECB</strong> implementação que recupera informação recente do Banco Central Europeu.</p>
+</li>
+<li>
+<p><strong>IMF</strong> implementação que recupera as cotações mais recentes do Fundo Internacional Monetário.</p>
+</li>
+<li>
+<p><strong>IMF_HIST</strong> implementação que permite recuperar cotação de uma data específica a partir do IMF.</p>
+</li>
+<li>
+<p><strong>ECB_HIST90</strong> implementação que recupera os últimos noventa dias do Banco Central Europeu.</p>
+</li>
+<li>
+<p><strong>ECB_HIST</strong> implementação que recupera as cotações desde 1999 do Banco Central Europeu.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="realizando-a-cota-o-a-partir-de-uma-data-espec-fica"><a class="anchor" href="#realizando-a-cota-o-a-partir-de-uma-data-espec-fica"></a>3.6.2. Realizando a cotação a partir de uma data específica</h4>
+<div class="paragraph">
+<p>Em alguns momentos da aplicação é importante saber não apenas o valor da cotação atual, mas a partir de uma data específica, por exemplo, ao se alugar um hotel normalmente o valor de cotação é dado a partir da confirmação da reserva ou no caso do cartão de crédito o valor da cotação é definido apenas no fechamento da fatura. Com o moneta é possível realizar tal busca a partir de uma data específica para isso é utilizado a  classe <code>ConversionQuery</code> com ela é possível realizar buscas de datas diferentes ou num range de datas. A representação de data aceita é a classe <code>LocalDate</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ExchangeRateProviderExample2 {
+
+    public static void main(String[] args) {
+
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = FastMoney.of(10, dollar);
+        MonetaryAmount money2 = FastMoney.of(10, real);
+
+
+        LocalDate localDate = Year.of(2009).atMonth(Month.JANUARY).atDay(9);
+
+        ExchangeRateProvider provider = MonetaryConversions.getExchangeRateProvider(ExchangeRateType.IMF_HIST);
+        ConversionQuery query = ConversionQueryBuilder.of().setTermCurrency(dollar).set(localDate).build();
+
+        CurrencyConversion currencyConversion = provider.getCurrencyConversion(query);
+
+        MonetaryAmount result = currencyConversion.apply(money2);
+        MonetaryAmount monetaryAmount = money.add(result);
+        System.out.println(monetaryAmount);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Caso a data especificada não seja encontrada será retornada uma exceção, por exemplo, não será possível recuperar a cotação do dia 9 de janeiro de 2011, uma vez que essa data foi em um domingo e a grande maioria dos provedores de cotação não trabalham nesse dia.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ExchangeRateProviderExample3 {
+
+    public static void main(String[] args) {
+
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = FastMoney.of(10, dollar);
+        MonetaryAmount money2 = FastMoney.of(10, real);
+
+
+        LocalDate localDate = Year.of(2011).atMonth(Month.JANUARY).atDay(9);
+
+        ExchangeRateProvider provider = MonetaryConversions.getExchangeRateProvider(ExchangeRateType.IMF_HIST);
+        ConversionQuery query = ConversionQueryBuilder.of().setTermCurrency(dollar).set(localDate).build();
+
+        CurrencyConversion currencyConversion = provider.getCurrencyConversion(query);
+
+        MonetaryAmount result = currencyConversion.apply(money2);//javax.money.MonetaryException: There is not exchange on day 2011-01-09 to rate to  rate on IFMRateProvider.
+
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Uma possível solução para esse problema é passar um range de datas, assim a implementação vai procurar algumas das datas, caso não encontre nenhuma delas lançará uma exceção, vale salientar que a implementação buscará a partir da ordem que foi definida.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ExchangeRateProviderExample4 {
+
+    public static void main(String[] args) {
+
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = FastMoney.of(10, dollar);
+        MonetaryAmount money2 = FastMoney.of(10, real);
+
+
+        LocalDate localDate = Year.of(2011).atMonth(Month.JANUARY).atDay(9);
+        LocalDate[] localDates = Stream.of(localDate, localDate.minusDays(1L), localDate.minusDays(2L),
+                localDate.minusDays(3L)).sorted(Comparator.&lt;LocalDate&gt;naturalOrder().reversed()).toArray(LocalDate[]::new);
+        ExchangeRateProvider provider = MonetaryConversions.getExchangeRateProvider(ExchangeRateType.IMF_HIST);
+        ConversionQuery query = ConversionQueryBuilder.of().setTermCurrency(dollar).set(localDates).build();
+
+        CurrencyConversion currencyConversion = provider.getCurrencyConversion(query);
+
+        MonetaryAmount result = currencyConversion.apply(money2);
+        MonetaryAmount sum = money.add(result);
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="ignorando-a-cota-o"><a class="anchor" href="#ignorando-a-cota-o"></a>3.6.3. Ignorando a cotação</h4>
+<div class="paragraph">
+<p>Em alguns momentos é necessário realizar uma troca de moeda sem realizar cotação, para isso existe o método <strong>exchange</strong> dentro do <code>MonetaryOperators</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ExchangeRateProviderExample5 {
+
+    public static void main(String[] args) {
+
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = FastMoney.of(10, dollar);
+        MonetaryAmount money2 = FastMoney.of(10, real);
+
+
+        MonetaryOperator operator = MonetaryOperators.exchange(dollar);
+        MonetaryAmount result = money2.with(operator).add(money);//USD 20.00000 ignoring currency
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trabalhando-com-streams"><a class="anchor" href="#trabalhando-com-streams"></a>3.7. Trabalhando com Streams</h3>
+<div class="paragraph">
+<p>Uma vez que a API nasceu após o Java 8, é natural que ele tenha suporte a alguns recursos do Java 8, como já vimos no capítulo anterior, a busca de uma cotação é data a partir de um <code>LocalDate</code>, sem falar no suporte a nova estrutura de dados que melhorou a experiência em trabalhar com listas, o <strong>Stream</strong>. Trabalhar com coleções é muito importante e comum, por exemplo, uma lista de produtos que serão cobrados é natural que seja impresso o valor total dessa compra. Para trabalhar com Stream a referência de implementação tem a classe <code>MonetaryFunctions</code>.</p>
+</div>
+<div class="sect3">
+<h4 id="ordenando-uma-lista-monet-ria"><a class="anchor" href="#ordenando-uma-lista-monet-ria"></a>3.7.1. Ordenando uma lista monetária</h4>
+<div class="paragraph">
+<p>Dentro da classe <code>MonetaryFunctions</code> é possível ordenar pela moeda, pelo valor numérico apenas, além da valiosidade de um dinheiro, levando em consideração a cotação da moeda, de forma ascendente e descendente.</p>
+</div>
+<div class="sect4">
+<h5 id="realizando-ordena-o-com-moeda"><a class="anchor" href="#realizando-ordena-o-com-moeda"></a>Realizando ordenação com moeda</h5>
+<div class="paragraph">
+<p>No caso da ordenação da moeda é levado em consideração o código da moeda. Por exemplo, uma lista com as moedas <code>USD</code>, <code>EUR</code>, <code>BRL</code> retornará <code>BRL</code>, <code>EUR</code> e <code>USD</code> de forma ascendente e USD, EUR, BRL de forma decrescente.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class SortMonetaryAmountCurrency {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit euro = Monetary.getCurrency("EUR");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = Money.of(9, euro);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(11, real);
+
+        List&lt;MonetaryAmount&gt; resultAsc = Stream.of(money, money2, money3)
+                .sorted(MonetaryFunctions
+                        .sortCurrencyUnit()).collect(Collectors.toList());//[BRL 11, EUR 9, USD 10]
+        List&lt;MonetaryAmount&gt; resultDesc = Stream.of(money, money2, money3)
+                .sorted(MonetaryFunctions
+                        .sortCurrencyUnitDesc()).collect(Collectors.toList());//[USD 10, EUR 9, BRL 11]
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="realizando-ordena-o-com-o-valor-num-rico"><a class="anchor" href="#realizando-ordena-o-com-o-valor-num-rico"></a>Realizando ordenação com o valor numérico</h5>
+<div class="paragraph">
+<p>A ordenação pelo valor numérico ignora a moeda e ordena apenas levando em consideração o valor monetário, vale salientar, que essa ordenação não realiza cotação de valores, em outras palavras, o valor de dez reais terá o mesmo valor que dez dólares. Também é possível retornar de forma ascendente e descendente.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class SortMonetaryAmountNumber {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit euro = Monetary.getCurrency("EUR");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = Money.of(9, euro);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(11, real);
+
+        List&lt;MonetaryAmount&gt; resultAsc = Stream.of(money, money2, money3)
+                .sorted(MonetaryFunctions
+                        .sortNumber()).collect(Collectors.toList());//[EUR 9, USD 10, BRL 11]
+        List&lt;MonetaryAmount&gt; resultDesc = Stream.of(money, money2, money3)
+                .sorted(MonetaryFunctions
+                        .sortNumberDesc()).collect(Collectors.toList());//[BRL 11, USD 10, EUR 9]
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="realizando-ordena-o-levando-em-considera-o-a-cota-o"><a class="anchor" href="#realizando-ordena-o-levando-em-considera-o-a-cota-o"></a>Realizando ordenação levando em consideração a cotação</h5>
+<div class="paragraph">
+<p>Também é possível realizar uma ordenação de forma crescente e decrescente levanto em consideração a cotação da moeda. Para isso basta passar uma implementação de <code>ExchangeRateProvider</code>. Por exemplo, dado uma lista com dez dólares, onze reais e nove euros, retornará de forma ascendente o valor de onze reais, dez dólares e nove euros levando em consideração que pela cotação o dólar é mais valioso que o real e menos que valioso que o euro.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class SortMonetaryAmountExchange {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit euro = Monetary.getCurrency("EUR");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = Money.of(9, euro);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(11, real);
+
+        ExchangeRateProvider provider =
+                MonetaryConversions.getExchangeRateProvider(ExchangeRateType.IMF);
+
+
+        List&lt;MonetaryAmount&gt; resultAsc = Stream.of(money, money2, money3)
+                .sorted(MonetaryFunctions
+                        .sortValuable(provider))
+                .collect(Collectors.toList());//[BRL 11, EUR 9, USD 10]
+
+        List&lt;MonetaryAmount&gt; resultDesc = Stream.of(money, money2, money3)
+                .sorted(MonetaryFunctions
+                        .sortValuableDesc(provider)).collect(Collectors.toList());//[USD 10, EUR 9, BRL 11]
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="juntando-as-ordena-es"><a class="anchor" href="#juntando-as-ordena-es"></a>Juntando as ordenações</h5>
+<div class="paragraph">
+<p>Apenas como recordação, já que esse recurso não é da money-api e sim do Java 8, é possível também misturar mais de um ordenador, para isso basta utilizar o método <strong>thenComparing</strong>. Basicamente ele faz a ordenação e caso os valores tenham o mesmo peso, ao usar o compare retorne o valor zero, ele usará o outro ordenador, assim a ordem que for definida o sort influenciará no resultado da ordenação.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class SortMixMonetaryAmountNumberCurrency {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit euro = Monetary.getCurrency("EUR");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = Money.of(10, euro);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(10, real);
+        MonetaryAmount money4 = Money.of(9, real);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        List&lt;MonetaryAmount&gt; resultAsc = Stream.of(money, money2, money3, money4, money5)
+                .sorted(MonetaryFunctions
+                        .sortNumber().thenComparing(MonetaryFunctions.sortCurrencyUnit()))
+                .collect(Collectors.toList());//[USD 8, BRL 9, BRL 10, EUR 10, USD 10]
+        List&lt;MonetaryAmount&gt; resultDesc = Stream.of(money, money2, money3, money4, money5)
+                .sorted(MonetaryFunctions
+                        .sortNumberDesc().thenComparing(MonetaryFunctions.sortCurrencyUnitDesc()))
+                .collect(Collectors.toList());//[USD 10, EUR 10, BRL 10, BRL 9, USD 8]
+        //using currency first
+        List&lt;MonetaryAmount&gt; resultCurrencyAsc = Stream.of(money, money2, money3, money4, money5)
+                .sorted(MonetaryFunctions
+                        .sortCurrencyUnit().thenComparing(MonetaryFunctions.sortNumber()))
+                .collect(Collectors.toList());//[BRL 9, BRL 10, EUR 10, USD 8, USD 10]
+        List&lt;MonetaryAmount&gt; resultCurrencyDesc = Stream.of(money, money2, money3, money4, money5)
+                .sorted(MonetaryFunctions
+                        .sortCurrencyUnitDesc().thenComparing(MonetaryFunctions.sortNumberDesc()))
+                .collect(Collectors.toList());//[USD 10, USD 8, EUR 10, BRL 10, BRL 9]
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="m-todos-de-redu-o"><a class="anchor" href="#m-todos-de-redu-o"></a>3.7.2. Métodos de redução</h4>
+<div class="paragraph">
+<p>A redução é o processo em que, dado uma lista de valores ele deverá retornar uma ou nenhuma saída, basicamente, a partir de uma lista transformá-lo para apenas um elemento, ou a ausência dele.</p>
+</div>
+<div class="sect4">
+<h5 id="somat-rio"><a class="anchor" href="#somat-rio"></a>Somatório</h5>
+<div class="paragraph">
+<p>A soma ou a redução pela soma é definido em: Dado uma lista de <code>MonetaryAmount</code> ele retornará um elemento com o somatório desses valores.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ReduceSumMonetaryAmount {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, dollar);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        Optional&lt;MonetaryAmount&gt; result = Stream.of(money, money2, money3, money4, money5).reduce(MonetaryFunctions.sum());
+        result.ifPresent(System.out::println);//USD 47
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Salientando, caso tenha uma moeda diferente no somatório ele retornará uma exceção.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ReduceSumMonetaryAmountError {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(10, real);
+        MonetaryAmount money4 = Money.of(9, dollar);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        Optional&lt;MonetaryAmount&gt; result = Stream.of(money, money2, money3, money4, money5).reduce(
+                MonetaryFunctions.sum());//javax.money.MonetaryException: Currency mismatch: BRL/USD
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Caso seja necessário somar e converter para uma específica moeda, o moneta dar suporte para isso, basta informar uma implementação de <code>ExchangeRateProvider</code> e também a moeda que todos os valores serão convertidos.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ReduceSumMonetaryAmountExchange {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+        ExchangeRateProvider provider = MonetaryConversions.getExchangeRateProvider(ExchangeRateType.IMF);
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(10, real);
+        MonetaryAmount money4 = Money.of(9, dollar);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        Optional&lt;MonetaryAmount&gt; result = Stream.of(money, money2, money3, money4, money5).reduce(
+                MonetaryFunctions.sum(provider, dollar));//javax.money.MonetaryException: Currency mismatch: BRL/USD
+        result.ifPresent(System.out::println);//money converted in dollar
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="valor-m-nimo-e-valor-m-ximo"><a class="anchor" href="#valor-m-nimo-e-valor-m-ximo"></a>Valor mínimo e valor máximo</h5>
+<div class="paragraph">
+<p>É possível realizar a redução pelo valor máximo e mínimo, por exemplo, dado uma lista é possível retornar o maior ou o menor valor da lista.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ReduceMaxMinMonetaryAmount {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, dollar);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        Optional&lt;MonetaryAmount&gt; max = Stream.of(money, money2, money3, money4, money5).reduce(
+                MonetaryFunctions.max());//javax.money.MonetaryException: Currency mismatch: BRL/USD
+        max.ifPresent(System.out::println);//USD 10
+
+        Optional&lt;MonetaryAmount&gt; min = Stream.of(money, money2, money3, money4, money5).reduce(
+                MonetaryFunctions.min());
+        min.ifPresent(System.out::println);//USD 8
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Caso seja realizado a operação de mínimo e máximo com moedas diferentes, acontecerá uma exceção. É possível passar um <code>ExchangeRateProvider</code> para realizar a conversão e então a comparação.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class ReduceMaxMinMonetaryAmountExchange {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit euro = Monetary.getCurrency("EUR");
+        ExchangeRateProvider provider = MonetaryConversions.getExchangeRateProvider(ExchangeRateType.IMF);
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, euro);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, euro);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        Optional&lt;MonetaryAmount&gt; max = Stream.of(money, money2, money3, money4, money5).reduce(
+                MonetaryFunctions.max(provider));//javax.money.MonetaryException: Currency mismatch: BRL/USD
+        max.ifPresent(System.out::println);//EUR 10
+
+        Optional&lt;MonetaryAmount&gt; min = Stream.of(money, money2, money3, money4, money5).reduce(
+                MonetaryFunctions.min(provider));
+        min.ifPresent(System.out::println);//USD 8
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="predicates"><a class="anchor" href="#predicates"></a>3.7.3. Predicates</h4>
+<div class="paragraph">
+<p>Operação de predicate é quando dado uma entrada o retorno é um valor booleano, ou seja, <em>verdadeiro</em> ou <em>falso</em>. Dentro do Stream o predicate pode ser utilizado como filtragem, filtrar por uma moeda específica, ou para match, verificar se existe algum elemento da lista ou todos batem com a condição.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class BooleanMonetaryAmount {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, real);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, real);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        Stream&lt;MonetaryAmount&gt; justDollars = Stream.of(money, money2, money3, money4, money5)
+                .filter(MonetaryFunctions.isCurrency(dollar));
+
+        boolean anyMatch = Stream.of(money, money2, money3, money4, money5)
+                .anyMatch(MonetaryFunctions.isCurrency(dollar));//true
+
+        boolean allMatch = Stream.of(money, money2, money3, money4, money5)
+                .allMatch(MonetaryFunctions.isCurrency(dollar));//true
+    }
+}</code></pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="predicate-com-moedas"><a class="anchor" href="#predicate-com-moedas"></a>Predicate com moedas</h5>
+<div class="paragraph">
+<p>Com o moneta é possível realizar predicate a partir da moeda, usando o inclusive e o exclusive. Ambos utilizam varargs, ou seja, é possível adicionar n elementos na condição:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>isCurrency(CurrencyUnit&#8230;&#8203; currencies)</code>: Retorna verdadeiro caso o <code>MonetaryAmount</code> tenha a uma das moedas especificadas.</p>
+</li>
+<li>
+<p><code>filterByExcludingCurrency(CurrencyUnit&#8230;&#8203; currencies)</code>: Retorna verdadeiro caso o <code>MonetaryAmount</code> não tenha nenhuma das moedas especificadas.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class PredicateMonetaryAmountCurrency {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+        CurrencyUnit euro = Monetary.getCurrency("EUR");
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, real);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, real);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        List&lt;MonetaryAmount&gt; justDollar = Stream.of(money, money2, money3, money4, money5)
+                .filter(MonetaryFunctions.isCurrency(dollar)).collect(Collectors.toList());//[USD 10, USD 10, USD 8]
+
+        boolean anyDollar = Stream.of(money, money2, money3, money4, money5)
+                .anyMatch(MonetaryFunctions.isCurrency(dollar));//true
+
+        boolean allDollar = Stream.of(money, money2, money3, money4, money5)
+                .allMatch(MonetaryFunctions.isCurrency(dollar));//false
+
+        List&lt;MonetaryAmount&gt; notDollar = Stream.of(money, money2, money3, money4, money5)
+                .filter(MonetaryFunctions.filterByExcludingCurrency(dollar)).collect(Collectors.toList());//[BRL 10, BRL 9]
+
+        boolean anyMatch = Stream.of(money, money2, money3, money4, money5)
+                .anyMatch(MonetaryFunctions.filterByExcludingCurrency(euro));//true
+
+        boolean allMatch = Stream.of(money, money2, money3, money4, money5)
+                .allMatch(MonetaryFunctions.filterByExcludingCurrency(euro));//true
+
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="predicate-com-o-valor-num-rico"><a class="anchor" href="#predicate-com-o-valor-num-rico"></a>Predicate com o valor numérico</h5>
+<div class="paragraph">
+<p>Além de operações com moeda é possível realizar condições com o valor numérico do <code>MonetaryAmount</code>, os métodos têm o mesmo comportamento da interface do <code>MonetaryAmount</code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>MonetaryFunctions.isLessThanOrEqualTo(monetaryAmount)</code></p>
+</li>
+<li>
+<p><code>MonetaryFunctions.isLessThan(monetaryAmount)</code></p>
+</li>
+<li>
+<p><code>MonetaryFunctions.isGreaterThan(monetaryAmount)</code></p>
+</li>
+<li>
+<p><code>MonetaryFunctions.isGreaterThanOrEqualTo(monetaryAmount)</code></p>
+</li>
+<li>
+<p><code>isBetween(MonetaryAmount min, MonetaryAmount max)</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class PredicateMonetaryAmountNumberValue {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, dollar);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        List&lt;MonetaryAmount&gt; greaterThanZero = Stream.of(money, money2, money3, money4, money5)
+                .filter(MonetaryFunctions.isGreaterThan(Money.zero(dollar)))
+                .collect(Collectors.toList());//[USD 10, USD 10, USD 10, USD 9, USD 8]
+
+        boolean hasAnyGreaterThanZero = Stream.of(money, money2, money3, money4, money5)
+                .anyMatch(MonetaryFunctions.isGreaterThan(Money.zero(dollar)));//true
+
+        boolean allBetweenAndTen = Stream.of(money, money2, money3, money4, money5)
+                .allMatch(MonetaryFunctions.isBetween(Money.zero(dollar),
+                        Money.of(BigDecimal.TEN, dollar)));//true
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="interagindo-com-predicates"><a class="anchor" href="#interagindo-com-predicates"></a>Interagindo com Predicates</h5>
+<div class="paragraph">
+<p>Assim com o sort, também é possível realizar interação com o predicate, utilizando operações boolieanas, assim temos os métodos, <strong>negate</strong>, <strong>and</strong> e <strong>or</strong>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class PredicateMonetaryAmountMix {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, dollar);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, dollar);
+        MonetaryAmount money5 = Money.of(8, dollar);
+        MonetaryAmount money6 = Money.of(8, dollar);
+
+        List&lt;MonetaryAmount&gt; greaterThanZeroAndDollar = Stream
+                .of(money, money2, money3, money4, money5, money6)
+                .filter(MonetaryFunctions.isGreaterThan(Money.zero(dollar))
+                        .and(MonetaryFunctions.isCurrency(real)))
+                .collect(Collectors.toList());//[]
+        List&lt;MonetaryAmount&gt; greaterThanZeroOrDollar = Stream
+                .of(money, money2, money3, money4, money5, money6)
+                .filter(MonetaryFunctions.isGreaterThan(Money.zero(dollar))
+                        .or(MonetaryFunctions.isCurrency(real)))
+                .collect(Collectors.toList());//[USD 10, USD 10, USD 10, USD 9, USD 8, USD 8]
+
+
+        List&lt;MonetaryAmount&gt; notGreaterThan = Stream
+                .of(money, money2, money3, money4, money5, money6)
+                .distinct()
+                .filter(MonetaryFunctions.isGreaterThan(Money.of(9, dollar))
+                        .negate())
+                .collect(Collectors.toList());//[USD 9, USD 8]
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="agrupamento-do-monetaryamount"><a class="anchor" href="#agrupamento-do-monetaryamount"></a>3.7.4. Agrupamento do MonetaryAmount</h4>
+<div class="paragraph">
+<p>Outro recurso importante é o agrupamento das informações do dinheiro, com ele é possível agrupar, particionar e sumarizar o valor.</p>
+</div>
+<div class="sect4">
+<h5 id="agrupando-pela-moeda"><a class="anchor" href="#agrupando-pela-moeda"></a>Agrupando pela moeda</h5>
+<div class="paragraph">
+<p>O moneta traz uma função para facilitar o agrupamento dos <code>MonetaryAmount</code> a partir da Moeda.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class AggregateGroupByCurrencyMonetaryAmount {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, real);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, real);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        Map&lt;CurrencyUnit, List&lt;MonetaryAmount&gt;&gt; groupByCurrency = Stream.of(money, money2, money3, money4, money5)
+                .collect(MonetaryFunctions.groupByCurrencyUnit());//{USD=[USD 10, USD 10, USD 8], BRL=[BRL 10, BRL 9]}
+
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="particionamento"><a class="anchor" href="#particionamento"></a>Particionamento</h5>
+<div class="paragraph">
+<p>Com os predicates, explicados do subcapítulo anterior, é possível particionar as informações do dinheiro. O particionamento se baseia em dado uma condição os valores serão mapeados em true, os MonetaryAmounts que atenderam a condição, e false, os <code>MonetaryAmounts</code> que não atenderam a condição.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class AggregatePredicateMonetaryAmount {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, real);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, real);
+        MonetaryAmount money5 = Money.of(8, dollar);
+
+        Map&lt;Boolean, List&lt;MonetaryAmount&gt;&gt; mapDollar = Stream.of(money, money2, money3, money4, money5)
+                .collect(Collectors.partitioningBy(
+                        MonetaryFunctions.isCurrency(dollar)));//{false=[BRL 10, BRL 9], true=[USD 10, USD 10, USD 8]}
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="sumarizando-a-moeda"><a class="anchor" href="#sumarizando-a-moeda"></a>Sumarizando a moeda</h5>
+<div class="paragraph">
+<p>Outra forma de agrupar o dinheiro é a partir do agrupamento do <code>MonetaryAmount</code>, com ele é possível saber o valor mínimo, máximo, somatório, média e o número de elementos. Para isso é necessário informar a moeda, caso a moeda seja diferente da informada ele será ignorado.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class AggregateSummaringMonetaryAmount {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, real);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, real);
+        MonetaryAmount money5 = Money.of(25, dollar);
+
+        MonetarySummaryStatistics summary = Stream.of(money, money2, money3, money4, money5)
+                .collect(MonetaryFunctions.summarizingMonetary(dollar));
+
+        MonetaryAmount min = summary.getMin();//USD 10
+        MonetaryAmount max = summary.getMax();//USD 25
+        MonetaryAmount average = summary.getAverage();//USD 15
+        long count = summary.getCount();//3
+        MonetaryAmount sum = summary.getSum();//USD 45
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>O <strong>Moneta</strong> também tem suporte para agrupar os sumarizadores a partir da moeda.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class AggregateGroupSummaringMonetaryAmount {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, real);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, real);
+        MonetaryAmount money5 = Money.of(25, dollar);
+
+        GroupMonetarySummaryStatistics grouped = Stream.of(money, money2, money3, money4, money5)
+        .collect(MonetaryFunctions.groupBySummarizingMonetary());
+        Map&lt;CurrencyUnit, MonetarySummaryStatistics&gt; mapSummary = grouped.get();
+        MonetarySummaryStatistics summary = mapSummary.get(dollar);
+
+        MonetaryAmount min = summary.getMin();//USD 10
+        MonetaryAmount max = summary.getMax();//USD 25
+        MonetaryAmount average = summary.getAverage();//USD 15
+        long count = summary.getCount();//3
+        MonetaryAmount sum = summary.getSum();//USD 45
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Também é possível sumarizar todos os valores convertendo as moedas para a moeda definida no método, para isso basta informar um <code>ExchangeRateProvider</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public class AggregateSummaringExchangeRateMonetaryAmount {
+
+    public static void main(String[] args) {
+        CurrencyUnit dollar = Monetary.getCurrency("USD");
+        CurrencyUnit real = Monetary.getCurrency("BRL");
+
+        ExchangeRateProvider provider = MonetaryConversions.getExchangeRateProvider(ExchangeRateType.IMF);
+
+
+        MonetaryAmount money = Money.of(10, dollar);
+        MonetaryAmount money2 = Money.of(10, real);
+        MonetaryAmount money3 = Money.of(10, dollar);
+        MonetaryAmount money4 = Money.of(9, real);
+        MonetaryAmount money5 = Money.of(25, dollar);
+
+        MonetarySummaryStatistics summary = Stream.of(money, money2, money3, money4, money5)
+                .collect(MonetaryFunctions.summarizingMonetary(dollar, provider));
+
+        MonetaryAmount min = summary.getMin();//USD 2.831248
+        MonetaryAmount max = summary.getMax();//USD 25
+        MonetaryAmount average = summary.getAverage();//USD 10.195416
+        long count = summary.getCount();//5
+        MonetaryAmount sum = summary.getSum();//50.97708
+
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="bibliografia"><a class="anchor" href="#bibliografia"></a>4. Bibliografia</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Block, Joshua. Java Efetivo. 2ª Ed, 2008.</p>
+</li>
+<li>
+<p>Martin, Robert C. Clean Code - A Handbook of Agile Software Craftsman, 2008.</p>
+</li>
+<li>
+<p><a href="http://martinfowler.com/ieeeSoftware/whenType.pdf">Fowler, Martin. When to make a Type</a></p>
+</li>
+<li>
+<p>JSR 354, <a href="https://www.jcp.org/en/jsr/detail?id=354">especificação</a></p>
+</li>
+<li>
+<p>Github JSR 354, <a href="https://github.com/JavaMoney">códigos</a></p>
+</li>
+<li>
+<p><a href="https://github.com/otaviojava/money-api-book-samples">Código exemplo</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2015-06-17 15:10:10 CEDT
+</div>
+</div>
+</body>
+</html>

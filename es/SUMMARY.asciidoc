@@ -1,0 +1,100 @@
+= JSR 354 Cookbook
+Otávio Gonçalves de Santana
+:doctype: book
+:encoding: utf-8
+:lang: es
+:toc: left
+:numbered:
+
+
+== Indice
+
+
+include::introduction.asciidoc[Una especificación de Dinero, realmente vale la pena?]
+
+include::credicts.asciidoc[Créditos]
+
+include::about_me.asciidoc[Sobre el Autor]
+
+include::chapter1.asciidoc[La motivación del tipo Dinero]
+
+include::chapter2.asciidoc[Alguien pasó por esto antes? Conocimiento del API]
+
+include::chapter2_1.asciidoc[Acceso al código fuente e instalación]
+
+include::chapter2_2.asciidoc[Representando dinero y moneda con money-api]
+
+include::chapter2_3.asciidoc[Métodos de creación]
+
+include::chapter2_3_1.asciidoc[Métodos de creación para RoundedMoney]
+
+include::chapter2_4.asciidoc[Operaciones Aritméticas]
+
+include::chapter2_5.asciidoc[Operaciones booleanas]
+
+include::chapter2_6.asciidoc[NumberValue: Una representación de la parte numérica de money:]
+
+include::chapter3.asciidoc[Manipulando y seleccionando información de MonetaryAmount]
+
+
+include::chapter3_1.asciidoc[MonetaryOperator]
+
+include::chapter3_2.asciidoc[MonetaryQuery]
+
+include::chapter3_3.asciidoc[MonetaryQuery vs MonetaryOperator]
+
+include::chapter4.asciidoc[Formateando dinero]
+
+
+include::chapter4_1.asciidoc[La clase MonetaryAmountFormat]
+
+include::chapter4_2.asciidoc[La clase MonetaryAmountFormatSymbols]
+
+include::chapter5.asciidoc[Cotización]
+
+
+include::chapter5_1.asciidoc[Realizando cotización con ExchangeRateProvider]
+
+include::chapter5_2.asciidoc[Realizando una cotización a partir de una fecha específica]
+
+include::chapter5_3.asciidoc[Ignorando la cotización]
+
+include::chapter6.asciidoc[Trabajando con Streams]
+
+
+include::chapter6_1.asciidoc[Ordenando una lista monetaria]
+
+include::chapter6_1_1.asciidoc[Realizando ordenación con moneda]
+
+include::chapter6_1_2.asciidoc[Realizando ordenación con valor numérico]
+
+include::chapter6_1_3.asciidoc[Realizando ordenación teniendo en consideración la cotización]
+
+include::chapter6_1_4.asciidoc[Uniendo las ordenaciones]
+
+include::chapter6_2.asciidoc[Métodos de reducción]
+
+
+include::chapter6_2_1.asciidoc[Sumatoria]
+
+include::chapter6_2_2.asciidoc[Valor mínimo y valor máximo]
+
+include::chapter6_3.asciidoc[Predicates]
+
+
+include::chapter6_3_1.asciidoc[Predicate con monedas]
+
+include::chapter6_3_2.asciidoc[Predicate con valor numérico]
+
+include::chapter6_3_3.asciidoc[Interactuando con Predicates]
+
+include::chapter6_4.asciidoc[Agrupamiento de MonetaryAmount]
+
+
+include::chapter6_4_1.asciidoc[Agrupando por la moneda]
+
+include::chapter6_4_2.asciidoc[Particionamiento]
+
+include::chapter6_4_3.asciidoc[Resumiendo monedas]
+
+include::bibliography.asciidoc[Bibliografia]

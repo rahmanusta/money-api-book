@@ -1,0 +1,9 @@
+
+== Bibliografía
+
+* Block, Joshua. Java Efetivo. 2ª Ed, 2008.
+* Martin, Robert C. Clean Code - A Handbook of Agile Software Craftsman, 2008.
+* http://martinfowler.com/ieeeSoftware/whenType.pdf[Fowler, Martin. When to make a Type]
+* JSR 354, https://www.jcp.org/en/jsr/detail?id=354[especificação]
+* Github JSR 354, https://github.com/JavaMoney[códigos]
+* https://github.com/otaviojava/money-api-book-samples[Código de ejemplo]

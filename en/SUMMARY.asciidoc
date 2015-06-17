@@ -1,0 +1,96 @@
+= JSR 354 Cookbook
+Otávio Gonçalves de Santana
+:doctype: book
+:encoding: utf-8
+:lang: en
+:toc: left
+:numbered:
+
+
+include::introduction.asciidoc[One specification to money, is it really worth it?]
+
+include::credits.asciidoc[Credit]
+
+include::about_me.asciidoc[About the Author]
+
+include::chapter1.asciidoc[The motivation behind the money type]
+
+include::chapter2.asciidoc[But nobody else thought it before? Knowing the API]
+
+include::chapter2_1.asciidoc[Access source and install]
+
+include::chapter2_2.asciidoc[Representing money and currency with money-api]
+
+include::chapter2_3.asciidoc[Creation Methods]
+
+include::chapter2_3_1.asciidoc[Creations methods to RoundedMoney]
+
+include::chapter2_4.asciidoc[Arithmetics operations]
+
+include::chapter2_5.asciidoc[Booleans operations]
+
+include::chapter2_6.asciidoc[NumberValue: The representation of numeric part of the money]
+
+include::chapter3.asciidoc[Manipulate and extract information from MonetaryAmount]
+
+
+include::chapter3_1.asciidoc[MonetaryOperator]
+
+include::chapter3_2.asciidoc[MonetaryQuery]
+
+include::chapter3_3.asciidoc[MonetaryQuery vs MonetaryOperator]
+
+include::chapter4.asciidoc[Formating money]
+
+
+include::chapter4_1.asciidoc[The class MonetaryAmountFormat]
+
+include::chapter4_2.asciidoc[The class MonetaryAmountFormat]
+
+include::chapter5.asciidoc[Exchange Rate]
+
+
+include::chapter5_1.asciidoc[Using the ExchangeRateProvider]
+
+include::chapter5_2.asciidoc[Exchange rate from a specific data]
+
+include::chapter5_3.asciidoc[Ignoring the exchange rate]
+
+include::chapter6.asciidoc[Working with Stream]
+
+
+include::chapter6_1.asciidoc[Sorting a monetary list]
+
+include::chapter6_1_1.asciidoc[Sorting by currency]
+
+include::chapter6_1_2.asciidoc[Sorting using the numeric value]
+
+include::chapter6_1_3.asciidoc[Sorting using exchange rate]
+
+include::chapter6_1_4.asciidoc[Mixing the sorters]
+
+include::chapter6_2.asciidoc[Reduction methods]
+
+
+include::chapter6_2_1.asciidoc[Sum]
+
+include::chapter6_2_2.asciidoc[Maximum and minimum value]
+
+include::chapter6_3.asciidoc[Predicates]
+
+
+include::chapter6_3_1.asciidoc[Predicates using currencies]
+
+include::chapter6_3_2.asciidoc[Predicates with numeric values]
+
+include::chapter6_3_3.asciidoc[Mixing with predicates]
+
+include::chapter6_4.asciidoc[Grouping MonetaryAmount]
+
+include::chapter6_4_1.asciidoc[Grouping by currency]
+
+include::chapter6_4_2.asciidoc[Partitioning]
+
+include::chapter6_4_3.asciidoc[Summarizing the money]
+
+include::bibliography.asciidoc[Bibliography]
